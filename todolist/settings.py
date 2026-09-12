@@ -66,8 +66,8 @@ DATABASES = {
         'NAME': 'app_db',
         'USER': 'app_user',
         'PASSWORD': '1234',
-        'HOST': '172.17.0.2',  # You can use a different host if your MySQL server is on a remote machine.
-        'PORT': '',  # Leave this empty to use the default MySQL port (3306).
+        'HOST': os.environ.get('DB_HOST', 'mysql'),  # use Docker service name or override with DB_HOST
+        'PORT': os.environ.get('DB_PORT', '3306'),  # default MySQL port
     }
 }
 

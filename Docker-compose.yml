@@ -1,0 +1,51 @@
+version: "3.9"
+
+networks:
+  db-data-net:
+    driver: bridge
+
+services:
+  pythonapp:
+    image: app:1.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    working_dir: /app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - db-data-net
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: todolist_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: "1234"
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks:
+      - db-data-net
+    restart: unless-stopped
+
+volumes:
+  db-data:
+    driver: local
